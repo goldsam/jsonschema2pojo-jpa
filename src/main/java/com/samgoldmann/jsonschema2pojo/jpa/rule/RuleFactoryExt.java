@@ -1,10 +1,11 @@
-
 package com.samgoldmann.jsonschema2pojo.jpa.rule;
 
 import com.sun.codemodel.JClassContainer;
 import com.sun.codemodel.JType;
 import org.jsonschema2pojo.Annotator;
+import org.jsonschema2pojo.DefaultGenerationConfig;
 import org.jsonschema2pojo.GenerationConfig;
+import org.jsonschema2pojo.Jackson2Annotator;
 import org.jsonschema2pojo.SchemaStore;
 import org.jsonschema2pojo.rules.Rule;
 import org.jsonschema2pojo.rules.RuleFactory;
@@ -30,6 +31,15 @@ public class RuleFactoryExt extends RuleFactory {
      */
     public RuleFactoryExt(GenerationConfig generationConfig, Annotator annotator, SchemaStore schemaStore) {
         super(generationConfig, annotator, schemaStore);
+    }
+    
+    /**
+     * Create a rule factory with the default generation config options.
+     * 
+     * @see DefaultGenerationConfig
+     */
+    public RuleFactoryExt() {
+        this(new DefaultGenerationConfig(), new Jackson2Annotator(), new SchemaStore());
     }
 
     @Override
