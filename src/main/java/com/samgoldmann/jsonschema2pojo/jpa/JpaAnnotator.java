@@ -3,8 +3,10 @@ package com.samgoldmann.jsonschema2pojo.jpa;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.codemodel.JAnnotationUse;
 import com.sun.codemodel.JDefinedClass;
+import com.sun.codemodel.JFieldVar;
 import javax.persistence.Entity;
 import javax.persistence.MappedSuperclass;
+import javax.persistence.Transient;
 import org.jsonschema2pojo.NoopAnnotator;
 
 
@@ -43,5 +45,10 @@ public class JpaAnnotator extends NoopAnnotator {
                 }
             }
         }
+    }
+
+    @Override
+    public void additionalPropertiesField(JFieldVar field, JDefinedClass clazz, String propertyName) {
+        field.annotate(Transient.class);
     }
 }
