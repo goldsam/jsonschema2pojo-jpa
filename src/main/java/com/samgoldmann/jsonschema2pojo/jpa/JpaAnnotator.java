@@ -1,11 +1,10 @@
 package com.samgoldmann.jsonschema2pojo.jpa;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.sun.codemodel.JAnnotationUse;
 import com.sun.codemodel.JDefinedClass;
 import javax.persistence.Entity;
 import javax.persistence.MappedSuperclass;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jsonschema2pojo.NoopAnnotator;
 
 
@@ -15,37 +14,34 @@ import org.jsonschema2pojo.NoopAnnotator;
  */
 public class JpaAnnotator extends NoopAnnotator {
     
-    private static final String IS_ABSTRACT_PROPERTY = "isAbstract";
+    private static final String PERSISTENCE_NODE_PROPERTY = "persistence";
     
-    private static final String TITLE_PROPERTY = "title";
+    private static final String MAPPED_SUPERCLASS_PROPERTY = "mappedSuperclass";
     
-    private static final Log LOG = LogFactory.getLog(JpaAnnotator.class);
-
+    private static final String ENTITY_NODE_PROPERTY = "entity";
+    
+    private static final String NAME_PROPERTY = "name";
+    
+    private static final String ENTITY_NAME_PARAM = "name";
+    
+    
     @Override
     public void propertyInclusion(JDefinedClass clazz, JsonNode schema) {
-        
-        String schemaTitle = getTitle(schema);
-        if (schemaTitle != null) {
-            LOG.info("Annotating schema: " + schemaTitle);
-        } else {
-            LOG.info("Annotating untitled schema.");
+        JsonNode persistenceNode = schema.get(PERSISTENCE_NODE_PROPERTY);
+        if (persistenceNode != null) {
+            JsonNode mappedSuperclassNode = persistenceNode.get(MAPPED_SUPERCLASS_PROPERTY);
+            if(mappedSuperclassNode != null && mappedSuperclassNode.asBoolean()) {
+                clazz.annotate(MappedSuperclass.class);
+            } else {
+                JAnnotationUse annotationUse = clazz.annotate(Entity.class);
+                
+                JsonNode entityNode = persistenceNode.get(ENTITY_NODE_PROPERTY);
+                JsonNode entityNameNode = (entityNode != null) ? entityNode.get(NAME_PROPERTY) : null;
+                String entityName = (entityNameNode != null) ? entityNameNode.asText() : null;
+                if (entityName != null && !entityName.isEmpty()) {
+                    annotationUse.param(ENTITY_NAME_PARAM, entityName);
+                }
+            }
         }
-        
-        if (isAbstract(schema)) {
-            clazz.annotate(MappedSuperclass.class);
-        } else {
-            clazz.annotate(Entity.class);
-        }
     }
-    
-    private String getTitle(JsonNode schema) {
-        JsonNode titleNode = schema.get(TITLE_PROPERTY);
-        return (titleNode != null) ? titleNode.asText() : null;
-    }
-    
-    private boolean isAbstract(JsonNode schema) {
-        JsonNode titleNode = schema.get(IS_ABSTRACT_PROPERTY);
-        return (titleNode != null) ? titleNode.asBoolean() : false;
-    }
-
 }
